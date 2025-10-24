@@ -1,0 +1,75 @@
+services:
+  # Servicio principal n8n
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - TZ=America/Mexico_City
+      - GENERIC_TIMEZONE=America/Mexico_City
+      - WEBHOOK_URL=https://pseudodramatic-spangly-belle.ngrok-free.dev
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=Carmona1234
+      - N8N_SECURE_COOKIE=false
+      - N8N_WORKFLOWS_SAVE_TO_FILE=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    networks:
+      - evolution_net
+
+  # Base de datos para Evolution API
+  postgres:
+    image: postgres:15
+    container_name: evolution_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: evouser
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: evolutiondb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - evolution_net
+
+  # Redis para colas internas
+  redis:
+    image: redis:7
+    container_name: evolution_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - evolution_net
+
+  # Evolution API
+  evolution-api:
+    image: atendai/evolution-api:v2.1.1
+    container_name: evolution_api
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - evolution_net
+
+volumes:
+  postgres_data:
+  evolution_instances:
+  n8n_data:
+
+networks:
+  evolution_net:
+    driver: bridge
+
