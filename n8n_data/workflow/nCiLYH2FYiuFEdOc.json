@@ -1,0 +1,582 @@
+{
+  "createdAt": "2025-10-19T22:16:22.577Z",
+  "updatedAt": "2025-10-23T19:35:13.000Z",
+  "id": "nCiLYH2FYiuFEdOc",
+  "name": "Asistente_Whatsapp.json",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "20560919-1c1c-45ac-9017-b4a7f9263185",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        16
+      ],
+      "id": "d414c740-2177-4b5b-86b3-330aa0115905",
+      "name": "Webhook",
+      "webhookId": "20560919-1c1c-45ac-9017-b4a7f9263185"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "643b5b3b-eb45-4b1b-b6de-5e7d54394f9e",
+              "name": "sender",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "ae464310-a118-46e7-979f-f4543d5dd3ef",
+              "name": "message_type",
+              "value": "={{ $json.body.data.messageType }}",
+              "type": "string"
+            },
+            {
+              "id": "ff9c32d2-03f3-4893-adce-d5cd1cf647e2",
+              "name": "text_message",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "818696ed-c896-41d1-8a5a-0d052836ac84",
+              "name": "voice_message",
+              "value": "={{ $json.body.data.message.base64 }}",
+              "type": "string"
+            },
+            {
+              "id": "16e270a5-44ad-4040-9b17-a9aa51f9738d",
+              "name": "session_id",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        16
+      ],
+      "id": "9c3774c7-8472-4bf3-9de3-7aca3341dfb4",
+      "name": "data_message_extraction"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ac8cd175-aa41-47a5-9bdb-a26b8aaab3e5",
+              "leftValue": "={{ $json.message_type }}",
+              "rightValue": "conversation",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        64
+      ],
+      "id": "1b0872ae-20f3-40a3-9078-a43fd8449ba9",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "voice_message",
+        "options": {
+          "mimeType": "audio/ogg"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        160
+      ],
+      "id": "dc47236f-94ff-40d8-b804-3066457b92fd",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        752,
+        160
+      ],
+      "id": "7b22f3ca-6886-49c9-a729-54d71430c9c8",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "xa80bGKCJzmKVFFY",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2c307f8-cf03-4f06-bafc-6f7de1a4a1eb",
+              "name": "final_message",
+              "value": "={{ $json.text_message }}",
+              "type": "string"
+            },
+            {
+              "id": "f180ea10-eeda-4c8d-b06f-bd7daad88df7",
+              "name": "sessionId",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        -32
+      ],
+      "id": "434ece88-2cf9-479a-8e9a-4a11a0a73b64",
+      "name": "final_message_text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "335d7989-a9b7-41d2-8f00-09551494a9bf",
+              "name": "final_message",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "ecf22afe-b3e3-49e8-aaf7-2facffcba123",
+              "name": "sessionId",
+              "value": "={{ $('If').item.json.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        144
+      ],
+      "id": "ab4ce10a-ad0d-458b-bcdc-4e5bd544a094",
+      "name": "final_message_vocie"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.final_message }}",
+        "options": {
+          "systemMessage": "=Eres un asistente llamado JARVIS que interpreta mensajes recibidos por WhatsApp para gestionar citas en Google Calendar.\n\nHoy es {{ $now }}. Zona horaria: America/Bogota (UTC-5)\n\nTu trabajo es entender lo que el usuario necesita y actuar en consecuencia, usando las herramientas disponibles. Solo gestionas citas. No respondes preguntas generales.\n\nPuedes realizar las siguientes tareas:\n- crear_evento: cuando el usuario quiere agendar una cita nueva\n- reprogramar_evento: cuando quiere cambiar la fecha o la hora de una cita existente\n- eliminar_evento: cuando quiere cancelar una cita existente\n- consultar_evento: cuando quiere saber cuándo tiene una cita\n\nEjemplos de mensajes y sus intenciones:\n- “Agenda una reunión con Laura mañana a las 4” = crear_evento\n- “Pasemos la cita del lunes para el miércoles” = reprogramar_evento\n- “Cancela la reunión de hoy” = eliminar_evento\n- “¿Qué tengo esta semana?” = consultar_evento\n\nHerramientas disponibles según la tarea:\n- crear_evento = agendar cita\n- reprogramar_evento = reprogramar cita\n- eliminar_evento = cancelar cita\n- consultar_evento = consultar citas\n\nTu respuesta debe ser en lenguaje natural, clara y breve, como si estuvieras escribiendo por WhatsApp. Usa emojis si es apropiado.\n\nExtrae toda la información posible del mensaje: título, fecha, hora, duración y ubicación. Si algún dato importante no está claro (por ejemplo, la hora), pregúntalo de forma amable antes de ejecutar la acción.\n\nEjemplos de respuesta:\n- Evento creado: “Listo, agendé tu cita ‘Reunión con Laura’ para mañana a las 4:00 p.m. 😊”\n- Evento reprogramado: “He actualizado tu cita. Ahora es el miércoles a las 3:00 p.m.”\n- Evento eliminado: “He cancelado tu cita programada para hoy. Si necesitas otra, dime. 👍”\n- Consulta: “Tienes una cita ‘Reunión con equipo’ el viernes a las 10:00 a.m.”\n\nSi el mensaje es ambiguo o no se entiende qué desea el usuario, pídele amablemente que aclare su intención.\n\nNo devuelvas estructuras técnicas ni generes JSON. Tu única salida debe ser una respuesta conversacional humana.\n\nPuedes usar la memoria de los últimos 10 mensajes del usuario para mantener el contexto si es necesario.\n\nTen en cuenta estas expresiones comunes de fecha y su interpretación:\n- “mañana a las 10am” = día siguiente a la fecha actual, a las 10:00 a.m.\n- “el próximo lunes” = el lunes siguiente a la fecha actual\n- “dentro de 8 días” = ocho días después de la fecha actual\n- “el mes que viene” = el mismo día del mes siguiente\n- “este viernes por la tarde” = si el viernes ya pasó esta semana, se refiere al próximo viernes\n\nSi no se menciona una duración específica para la cita, asume que es de una hora.\n\nCuando uses una herramienta, asegúrate de proporcionar correctamente estos datos si están disponibles en el mensaje del usuario:\n- Título del evento = summary\n- Fecha y hora de inicio = startTime (formato ISO 8601)\n- Fecha y hora de finalización = endTime (puede calcularse si hay duración)\n- Descripción = description (opcional)\n- Ubicación = location (opcional)\n\nNo incluyas enlaces de videollamadas (como Google Meet) en tus respuestas, aunque la herramienta los devuelva."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        64
+      ],
+      "id": "b04122c5-d66e-43c9-b1e4-0d91375bdea3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1088,
+        336
+      ],
+      "id": "fcc34574-075c-4bfa-a576-6549ceb6c8d4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "xa80bGKCJzmKVFFY",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        320
+      ],
+      "id": "846144ac-a003-4fba-ac50-551fb1e8ee48",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "Ta0g1Q8fTKAOvwtL",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta cuando el usuario quiera crear una nueva cita",
+        "calendar": {
+          "__rl": true,
+          "value": "moisesgutierrezcarmona@gmail.com",
+          "mode": "list",
+          "cachedResultName": "moisesgutierrezcarmona@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1648,
+        336
+      ],
+      "id": "3cd55ba3-8379-4f7a-995a-012b5be284c3",
+      "name": "agendar_cita",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "frgPd1Kz4DbWTt6O",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://18.219.128.53:8080/message/sendText/{{ $('Webhook').item.json.body.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "123456.+az1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('data_message_extraction').item.json.sender.split(\"@\")[0] }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        64
+      ],
+      "id": "eb5f2640-8628-47c1-9c9c-e0b25dcd83e8",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta si el usuario desea cancelar una cita",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "moisesgutierrezcarmona@gmail.com",
+          "mode": "list",
+          "cachedResultName": "moisesgutierrezcarmona@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1424,
+        368
+      ],
+      "id": "f854b555-ab36-4589-8868-cff5dffdec87",
+      "name": "cancelar_cita",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "frgPd1Kz4DbWTt6O",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta si el usuario quiere saber cuales citas tiene",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "moisesgutierrezcarmona@gmail.com",
+          "mode": "list",
+          "cachedResultName": "moisesgutierrezcarmona@gmail.com"
+        },
+        "limit": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1536,
+        432
+      ],
+      "id": "6e4cebb4-0703-4991-8dbe-570b7ff3a39f",
+      "name": "consultar_citas",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "frgPd1Kz4DbWTt6O",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "data_message_extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data_message_extraction": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "final_message_text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "final_message_vocie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "final_message_vocie": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "final_message_text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agendar_cita": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelar_cita": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_citas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "5b965d7a-7b21-4594-bf1a-c68333b1e34a",
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "createdAt": "2025-10-19T22:16:22.583Z",
+      "updatedAt": "2025-10-19T22:16:22.583Z",
+      "role": "workflow:owner",
+      "workflowId": "nCiLYH2FYiuFEdOc",
+      "projectId": "Yf33NghxpOH0WH7S",
+      "project": {
+        "createdAt": "2025-10-19T20:51:55.232Z",
+        "updatedAt": "2025-10-21T17:41:38.131Z",
+        "id": "Yf33NghxpOH0WH7S",
+        "name": "Moises Gutierrez Carmona <moisesgutierrezcarmona@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

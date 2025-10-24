@@ -1,8 +1,8 @@
 # Ignorar el archivo de variables de entorno
 .env
 
-# Ignorar TODA la carpeta de datos...
-n8n_data/
+# Ignorar TODO EL CONTENIDO de n8n_data...
+n8n_data/*
 
-# ...EXCEPTO la carpeta de workflows que está adentro
+# ...EXCEPTO la carpeta de workflow
 !n8n_data/workflow/
